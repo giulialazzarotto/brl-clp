@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>BRL → CLP</title>
+  <style>
+    :root {
+      --bg: #0b0b10;
+      --card: #141420;
+      --text: #ffffff;
+      --muted: rgba(255,255,255,.75);
+      --accent: #a855f7; /* roxinho */
+    }
+    body{
+      margin:0;
+      background: transparent; /* ajuda no embed */
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      color: var(--text);
+    }
+    .wrap{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 16px;
+    }
+    .card{
+      width: 100%;
+      max-width: 520px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(168,85,247,.18), rgba(20,20,32,1));
+      border: 1px solid rgba(168,85,247,.35);
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+      padding: 18px 18px 14px;
+    }
+    .top{
+      display:flex;
+      align-items:baseline;
+      justify-content:space-between;
+      gap: 12px;
+    }
+    .title{
+      font-weight: 700;
+      letter-spacing: .2px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .value{
+      font-size: 56px;
+      line-height: 1.05;
+      font-weight: 800;
+      margin: 10px 0 6px;
+    }
+    .sub{
+      display:flex;
+      gap: 8px;
+      align-items:center;
+      justify-content:space-between;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .badge{
+      font-size:12px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(168,85,247,.22);
+      border: 1px solid rgba(168,85,247,.30);
+      color: #f5e9ff;
+      white-space: nowrap;
+    }
+    .error{
+      color: #ffd0d0;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="top">
+        <div class="title">Cotação do dia</div>
+        <div class="badge">1 BRL → CLP</div>
+      </div>
+
+      <div class="value" id="rate">—</div>
+
+      <div class="sub">
+        <div id="meta">Carregando…</div>
+        <div id="source">Fonte: exchangerate.host</div>
+      </div>
+
+      <div class="error" id="error" style="display:none;"></div>
+    </div>
+  </div>
+
+  <script>
+    async function loadRate() {
+      const rateEl = document.getElementById("rate");
+      const metaEl = document.getElementById("meta");
+      const errEl = document.getElementById("error");
+
+      try {
+        // API gratuita (geralmente funciona sem chave). Se falhar, eu te passo uma alternativa.
+        const url = "https://api.exchangerate.host/latest?base=BRL&symbols=CLP";
+        const res = await fetch(url, { cache: "no-store" });
+        if (!res.ok) throw new Error("Falha ao buscar cotação: HTTP " + res.status);
+
+        const data = await res.json();
+        const rate = data?.rates?.CLP;
+        if (!rate) throw new Error("Resposta inesperada da API.");
+
+        // Formata com 2 casas (você pode mudar)
+        const formatted = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 2 }).format(rate);
+        rateEl.textContent = `${formatted} CLP`;
+
+        const now = new Date();
+        metaEl.textContent = `Atualizado: ${now.toLocaleString("pt-BR")}`;
+      } catch (e) {
+        errEl.style.display = "block";
+        errEl.textContent = "Não consegui carregar a cotação agora. " + (e?.message || "");
+        metaEl.textContent = "—";
+        rateEl.textContent = "Erro";
+      }
+    }
+
+    loadRate();
+    // Se quiser atualizar sozinho:
+    setInterval(loadRate, 30 * 60 * 1000); // a cada 30 min
+  </script>
+</body>
+</html>
