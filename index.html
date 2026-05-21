@@ -102,12 +102,12 @@
 
       try {
         // API gratuita (geralmente funciona sem chave). Se falhar, eu te passo uma alternativa.
-        const url = "https://api.exchangerate.host/latest?base=BRL&symbols=CLP";
+        const url = "https://open.er-api.com/v6/latest/BRL";
         const res = await fetch(url, { cache: "no-store" });
         if (!res.ok) throw new Error("Falha ao buscar cotação: HTTP " + res.status);
 
         const data = await res.json();
-        const rate = data?.rates?.CLP;
+        const rate = data?.rates?.CLP || data?.conversion_rates?.CLP;
         if (!rate) throw new Error("Resposta inesperada da API.");
 
         // Formata com 2 casas (você pode mudar)
